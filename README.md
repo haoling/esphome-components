@@ -27,14 +27,23 @@ external_components:
     components: [nec_sealing_light]
 
 remote_transmitter:
-  id: ir_transmitter
+  id: irsend
   pin: GPIO4          # 赤外線LEDを接続したピン
   carrier_duty_percent: 50%
 
 light:
   - platform: nec_sealing_light
-    name: "Sealing Light"
-    transmitter_id: ir_transmitter
+    transmitter_id: irsend
+    lights:
+      - name: "Sealing Light"
+        id: sealing_light
+        restore_mode: RESTORE_DEFAULT_OFF
+        default_transition_length: 0s
+        gamma_correct: 1.0
+        on_turn_on:
+          - light.turn_on:
+              id: sealing_light
+              brightness: 100%
 ```
 
 #### 輝度の段階
