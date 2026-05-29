@@ -34,16 +34,15 @@ remote_transmitter:
 light:
   - platform: nec_sealing_light
     transmitter_id: irsend
-    lights:
-      - name: "Sealing Light"
-        id: sealing_light
-        restore_mode: RESTORE_DEFAULT_OFF
-        default_transition_length: 0s
-        gamma_correct: 1.0
-        on_turn_on:
-          - light.turn_on:
-              id: sealing_light
-              brightness: 100%
+    name: "Sealing Light"
+    id: sealing_light
+    restore_mode: RESTORE_DEFAULT_OFF
+    default_transition_length: 0s
+    gamma_correct: 1.0
+    on_turn_on:
+      - light.turn_on:
+          id: sealing_light
+          brightness: 100%
 ```
 
 #### 輝度の段階
