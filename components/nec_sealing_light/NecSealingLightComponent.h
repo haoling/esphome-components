@@ -59,18 +59,25 @@ class NecSealingLightComponent : public light::LightOutput {
     bool main_switch;
     light_state->current_values.as_binary(&main_switch);
     if (!main_switch) {
-      command_off_();
+      if (this->state_)
+        command_off_();
       return;
     }
 
     if (target_brightness >= 0.9f) {
-      command_full_light_();
+      if (!this->state_ || this->brightness_ < 0.9f)
+        command_full_light_();
       return;
     }
     if (target_brightness < 0.1f) {
-      command_night_light_();
+      if (!this->state_ || this->brightness_ >= 0.1f)
+        command_night_light_();
       return;
     }
+
+    // Already at target — nothing to send
+    if (this->state_ && this->brightness_ == target_brightness)
+      return;
 
     if (!this->state_ || this->brightness_ < 0.1f) {
       command_full_light_();
