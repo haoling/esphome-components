@@ -32,7 +32,7 @@ class NecSealingLightComponent : public light::LightOutput {
 
   light::LightTraits get_traits() override {
     auto traits = light::LightTraits();
-    traits.set_supported_color_modes({light::ColorMode::ON_OFF, light::ColorMode::BRIGHTNESS});
+    traits.set_supported_color_modes({light::ColorMode::BRIGHTNESS});
     return traits;
   }
 
