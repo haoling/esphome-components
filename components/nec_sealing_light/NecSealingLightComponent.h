@@ -21,6 +21,7 @@ class NecSealingLightComponent : public light::LightOutput {
     remote_base::NECData data;
     data.address = address;
     data.command = command;
+    data.command_repeats = 1;
     remote_base::NECProtocol().encode(call.get_data(), data);
     call.perform();
   }
