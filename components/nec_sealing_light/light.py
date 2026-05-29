@@ -1,7 +1,11 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import light, remote_transmitter
-from esphome.const import CONF_ID
+from esphome.const import (
+    CONF_DEFAULT_TRANSITION_LENGTH,
+    CONF_GAMMA_CORRECT,
+    CONF_ID,
+)
 
 DEPENDENCIES = ["remote_transmitter"]
 AUTO_LOAD = ["remote_base"]
@@ -19,6 +23,8 @@ CONFIG_SCHEMA = light.LIGHT_SCHEMA.extend(
         cv.Required(CONF_TRANSMITTER_ID): cv.use_id(
             remote_transmitter.RemoteTransmitterComponent
         ),
+        cv.Optional(CONF_DEFAULT_TRANSITION_LENGTH, default="1s"): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_GAMMA_CORRECT, default=2.8): cv.positive_float,
     }
 )
 
