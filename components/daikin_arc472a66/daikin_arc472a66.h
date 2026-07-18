@@ -189,7 +189,9 @@ class DaikinArc472A66Climate final : public climate_ir::ClimateIR {
   static uint8_t mode_bits_for_(climate::ClimateMode mode);
 
   uint8_t last_humidity_{0x66};
-  bool power_off_internal_clean_{true};
+  // デフォルトfalse: 内部クリーンへの移行はエアコン本体が自律的に判断するため
+  // (daikin_arc472a66.cpp の transmit_state() 内コメント・PROTOCOL_NOTES.md 2-6節参照)
+  bool power_off_internal_clean_{false};
 
   // 停止(OFF)フレーム送信時に参照する「直前に使っていたモード」。
   // 実測により、停止時もこのモードのビット/温度エンコードが維持されるため。

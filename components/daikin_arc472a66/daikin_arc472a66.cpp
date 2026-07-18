@@ -246,8 +246,15 @@ void DaikinArc472A66Climate::transmit_state() {
 
   transmit.perform();
 
-  // 実測: 内部クリーンは停止フレームへのビット追加ではなく、専用の8バイト
-  // 特殊フレームを停止フレーム送信直後に追加送信する方式が実機に忠実 (2-6節)
+  // 実測: 内部クリーンに入るかどうかはエアコン本体がコンプレッサー稼働時間等
+  // から自律的に判断しており、正しい停止フレーム(直前モードのビット保持)を
+  // 送るだけでその自律判断が正しく働く (PROTOCOL_NOTES.md 2-6節)。
+  // 停止直後に内部クリーン専用フレームを追加送信すると、エアコン側が
+  // 「自律的に開始した内部クリーンをキャンセルするトグル」と解釈してしまい、
+  // 「運転を停止しました」のアナウンスが飛ばされ「内部クリーン運転を停止
+  // しました」になる不具合が実機で確認されたため、自動追加送信はしない。
+  // 確実に内部クリーンを開始させたい場合は power_off_internal_clean を
+  // true にするか、start_internal_clean アクションを明示的に呼ぶこと。
   if (this->mode == climate::CLIMATE_MODE_OFF && this->power_off_internal_clean_) {
     this->send_special_command_(DAIKIN_SPECIAL_CMD_INTERNAL_CLEAN);
   }
