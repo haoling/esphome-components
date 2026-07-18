@@ -52,7 +52,11 @@ SENSOR_VANE_OPTIONS = {
 }
 
 # 「停止ボタンを押したときに、内部クリーン専用の8バイト特殊フレームを
-#  追加送信するか」を選べるオプション (PROTOCOL_NOTES.md 2-6節)
+#  追加送信するか」を選べるオプション (PROTOCOL_NOTES.md 2-6節)。
+# デフォルトfalse: 内部クリーンに入るかどうかは本来エアコン本体が自律的に
+# 判断しており、この追加フレームを送ると「自律的に開始した内部クリーンを
+# キャンセルするトグル」と誤解釈され、正常な停止アナウンスも内部クリーン
+# 開始も行われなくなる不具合が実機で確認されたため。
 CONF_POWER_OFF_INTERNAL_CLEAN = "power_off_internal_clean"
 CONF_OFFSET = "offset"
 CONF_ENABLED = "enabled"
@@ -62,7 +66,7 @@ CONFIG_SCHEMA = climate_ir.climate_ir_with_receiver_schema(
     DaikinArc472A66Climate
 ).extend(
     {
-        cv.Optional(CONF_POWER_OFF_INTERNAL_CLEAN, default=True): cv.boolean,
+        cv.Optional(CONF_POWER_OFF_INTERNAL_CLEAN, default=False): cv.boolean,
     }
 )
 

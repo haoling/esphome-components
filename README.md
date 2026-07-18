@@ -38,7 +38,8 @@ climate:
     id: daikin_ac
     receiver_id: ir_rx
     transmitter_id: ir_tx
-    power_off_internal_clean: true  # 停止時に内部クリーン専用フレームを追加送信
+    power_off_internal_clean: false  # デフォルトfalse。trueにすると停止時に内部クリーン専用フレームを追加送信するが、
+                                      # エアコン本体の自律的な内部クリーン開始をキャンセルしてしまう不具合が実機で確認されている(要注意)
 
 # 標準のclimateサービス(climate.control)に加えて、
 # 以下のカスタムアクションでARC472A66固有の機能を操作できる
