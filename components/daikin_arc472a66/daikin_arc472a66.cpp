@@ -166,8 +166,12 @@ void DaikinArc472A66Climate::transmit_state() {
   // 実測: 風向上下/左右ボタンを一度でも操作すると 0x0e→0x16 に切り替わり
   // そのまま維持される。停止時は 0x02。
   remote_header[9] = powered_on ? (this->vane_adjusted_ ? 0x16 : 0x0e) : 0x02;
-  remote_header[11] = this->vertical_vane_byte_();
-  remote_header[12] = this->circulation_ ? 0xd6 : 0xe6;
+  // 自動復帰設定 (実測確認済み。モードに依存せず一定)
+  remote_header[11] = static_cast<uint8_t>(this->auto_return_);
+  // 風向上下 + サーキュレーション。実測ではサーキュレーションONの間、
+  // 風向上下の値からbit0x10が落ちる (AUTO: 0xE6→0xD6) ことしか確認できて
+  // いないため、他の風向値との組み合わせは未検証。
+  remote_header[12] = this->vertical_vane_byte_() & (this->circulation_ ? (uint8_t) ~0x10 : (uint8_t) 0xFF);
   remote_header[13] = this->horizontal_vane_byte_();
   remote_header[14] = this->streamer_ ? 0xd2 : 0xc2;
 

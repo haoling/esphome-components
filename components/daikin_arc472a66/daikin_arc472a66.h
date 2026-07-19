@@ -92,13 +92,25 @@ const uint8_t DAIKIN_SPECIAL_CMD_FILTER_CLEAN = 0x14;
 const uint8_t DAIKIN_SPECIAL_CMD_INQUIRY = 0x87;
 const uint8_t DAIKIN_SPECIAL_PAYLOAD_INQUIRY = 0x20;
 
-// 風向上下 (header frame byte[11])。
-// 【注意】PROTOCOL_NOTES.md 2-5節では単独ボタンテストにより byte[11] として
-// 確定したと記録されているが、5章のアーカイブ生データでは同じセッション中
-// byte[9] の方が 0x0e→0x16 と実際に切り替わっており、byte[11] は 0x30 で
-// 不変という食い違いが残っている(モード変化とだけ相関している可能性がある)。
-// ここでは実機での単独ボタンテストの結論(2-5節)を優先して実装するが、
-// 実機での送信確認(受信して意図通りかログを見る)を推奨する。
+// 自動復帰設定 (header frame byte[11])。
+// リモコンのメニュー内から設定する「電源ON操作から一定時間で自動的に運転を
+// 止める」機能(オフ/30分/1時間の3段階)。実機で以下の3値を確認済み:
+// オフ=0x30 / 30分=0x20 / 1時間=0x10。冷房・暖房どちらのモードでも同じ値
+// (モード依存ではない)。デフォルトはオフ(このビットが常に0x30以外の値に
+// なると自動復帰が有効になってしまうため)。
+enum class AutoReturn : uint8_t {
+  OFF = 0x30,
+  THIRTY_MINUTES = 0x20,
+  ONE_HOUR = 0x10,
+};
+
+// 風向上下 (header frame byte[12])。
+// 【訂正】以前は byte[11] と記録されていたが、実機の複数キャプチャ
+// (暖房23℃時に POSITION_3=0x36 が観測された位置、自動復帰検証時に
+// POSITION_1=0x16/AUTO=0xE6 が観測された位置)から、正しくは byte[12] で
+// あることが判明した。byte[11] は自動復帰設定用のバイト(上記参照)であり、
+// 以前の実装がここに風向上下の値を書き込んでいたため、常に自動復帰が
+// 意図しない値で送信される不具合の原因になっていた。
 enum class VerticalVane : uint8_t {
   POSITION_1 = 0x16,  // 一番上
   POSITION_2 = 0x26,
@@ -153,6 +165,7 @@ class DaikinArc472A66Climate final : public climate_ir::ClimateIR {
 
   // ---- YAML options ----
   void set_power_off_internal_clean(bool value) { this->power_off_internal_clean_ = value; }
+  void set_auto_return(AutoReturn value) { this->auto_return_ = value; }
 
   // ---- オートメーションのアクションから呼ばれるsetter群 ----
   // (climateの標準機能(mode/fan_mode/target_temperature/swing_mode/preset)には
@@ -192,6 +205,9 @@ class DaikinArc472A66Climate final : public climate_ir::ClimateIR {
   // デフォルトfalse: 内部クリーンへの移行はエアコン本体が自律的に判断するため
   // (daikin_arc472a66.cpp の transmit_state() 内コメント・PROTOCOL_NOTES.md 2-6節参照)
   bool power_off_internal_clean_{false};
+
+  // 自動復帰設定 (header byte[11])。デフォルトはオフ。
+  AutoReturn auto_return_{AutoReturn::OFF};
 
   // 停止(OFF)フレーム送信時に参照する「直前に使っていたモード」。
   // 実測により、停止時もこのモードのビット/温度エンコードが維持されるため。

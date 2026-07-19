@@ -51,6 +51,15 @@ SENSOR_VANE_OPTIONS = {
     "SPOT": SensorVane.SPOT,  # スポット(ピンポイント検知)
 }
 
+# リモコンのメニュー内から設定する「自動復帰設定」(電源ON操作から一定時間で
+# 自動的に運転を止める機能)。実機キャプチャで確認済み: オフ/30分/1時間の3値。
+AutoReturn = daikin_arc472a66_ns.enum("AutoReturn", True)
+AUTO_RETURN_OPTIONS = {
+    "OFF": AutoReturn.OFF,
+    "THIRTY_MINUTES": AutoReturn.THIRTY_MINUTES,
+    "ONE_HOUR": AutoReturn.ONE_HOUR,
+}
+
 # 「停止ボタンを押したときに、内部クリーン専用の8バイト特殊フレームを
 #  追加送信するか」を選べるオプション (PROTOCOL_NOTES.md 2-6節)。
 # デフォルトfalse: 内部クリーンに入るかどうかは本来エアコン本体が自律的に
@@ -58,6 +67,7 @@ SENSOR_VANE_OPTIONS = {
 # キャンセルするトグル」と誤解釈され、正常な停止アナウンスも内部クリーン
 # 開始も行われなくなる不具合が実機で確認されたため。
 CONF_POWER_OFF_INTERNAL_CLEAN = "power_off_internal_clean"
+CONF_AUTO_RETURN = "auto_return"
 CONF_OFFSET = "offset"
 CONF_ENABLED = "enabled"
 CONF_VANE = "vane"
@@ -67,6 +77,9 @@ CONFIG_SCHEMA = climate_ir.climate_ir_with_receiver_schema(
 ).extend(
     {
         cv.Optional(CONF_POWER_OFF_INTERNAL_CLEAN, default=False): cv.boolean,
+        cv.Optional(CONF_AUTO_RETURN, default="OFF"): cv.enum(
+            AUTO_RETURN_OPTIONS, upper=True
+        ),
     }
 )
 
@@ -74,6 +87,7 @@ CONFIG_SCHEMA = climate_ir.climate_ir_with_receiver_schema(
 async def to_code(config):
     var = await climate_ir.new_climate_ir(config)
     cg.add(var.set_power_off_internal_clean(config[CONF_POWER_OFF_INTERNAL_CLEAN]))
+    cg.add(var.set_auto_return(config[CONF_AUTO_RETURN]))
 
 
 # ============================================================
